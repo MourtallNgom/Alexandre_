@@ -1,1 +1,873 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alexandre Martin · Étudiant en Informatique</title>
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
+  <!-- html2pdf (pour la génération PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Inter", sans-serif;
+      scroll-behavior: smooth;
+    }
 
+    body {
+      background: #eef3f8;
+      color: #1d2f40;
+      line-height: 1.5;
+    }
+
+    /* ----- MENU FLOTTANT AMÉLIORÉ ----- */
+    .menu-flottant {
+      position: fixed;
+      top: 25px;
+      right: 30px;
+      z-index: 999;
+    }
+
+    .menu-icon {
+      width: 65px;
+      height: 65px;
+      background: linear-gradient(145deg, #2c405a, #1f324b);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 2rem;
+      cursor: pointer;
+      box-shadow: 0 12px 25px rgba(0,20,50,0.5), 0 0 0 3px rgba(255,255,255,0.3) inset;
+      border: 1px solid #a5c1e5;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .menu-icon:hover {
+      background: linear-gradient(145deg, #3a5272, #27415f);
+      transform: scale(1.1) rotate(360deg);
+      box-shadow: 0 18px 30px #001e3b, 0 0 0 4px white inset;
+    }
+
+    .nav-panel {
+      position: fixed;
+      top: 105px;
+      right: 30px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      border-radius: 50px 20px 50px 20px;
+      padding: 1.5rem 0.8rem;
+      box-shadow: 0 30px 50px -15px #102434, 0 0 0 2px #ffffffcc inset, 0 0 0 1px #b9d2f0;
+      width: 280px;
+      transform: translateX(450px);
+      transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+      z-index: 998;
+      border: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .nav-panel.open {
+      transform: translateX(0);
+    }
+
+    .nav-panel ul {
+      list-style: none;
+      padding: 0.3rem;
+    }
+
+    .nav-panel li {
+      margin: 1rem 0;
+    }
+
+    .nav-panel a {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 1rem 1.8rem;
+      background: rgba(240, 248, 255, 0.7);
+      border-radius: 80px;
+      color: #142f4c;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid #c9dfff;
+      transition: all 0.25s;
+      font-size: 1.05rem;
+      box-shadow: 0 6px 12px -8px #2f5379;
+    }
+
+    .nav-panel a i {
+      width: 28px;
+      color: #1f4f81;
+      font-size: 1.3rem;
+    }
+
+    .nav-panel a:hover {
+      background: linear-gradient(105deg, #2e4e77, #1b3b5e);
+      color: white;
+      border-color: white;
+      transform: translateX(8px) scale(1.02);
+      box-shadow: 0 15px 20px -8px #091f35;
+    }
+
+    .nav-panel a:hover i {
+      color: white;
+    }
+
+    /* Bouton de téléchargement PDF dans le menu */
+    .pdf-download-btn {
+      margin-top: 1.5rem;
+      padding: 0 0.5rem;
+    }
+    
+    .pdf-download-btn a {
+      background: linear-gradient(105deg, #3d5a7a, #1f3f5c);
+      border: 2px solid #ffd966;
+      justify-content: center;
+      font-weight: 700;
+    }
+    
+    .pdf-download-btn a i {
+      color: #ffd966;
+    }
+    
+    .pdf-download-btn a:hover i {
+      color: white;
+    }
+
+    /* ----- HEADER (hero) ----- */
+    .site-header {
+      background: linear-gradient(115deg, #1f2f40 0%, #314b67 50%, #4f6d8f 100%);
+      color: white;
+      padding: 3.5rem 2rem 6rem 2rem;
+      clip-path: polygon(0 0, 100% 0, 100% 88%, 0 100%);
+      margin-bottom: 2.5rem;
+      position: relative;
+      box-shadow: 0 15px 35px rgba(0,25,45,0.4);
+    }
+
+    .site-header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 30px, transparent 30px, transparent 60px);
+      pointer-events: none;
+    }
+
+    .header-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .identity h1 {
+      font-size: 3.8rem;
+      font-weight: 700;
+      letter-spacing: -1px;
+      text-shadow: 0 6px 14px rgba(0,0,0,0.4);
+      background: linear-gradient(135deg, #ffffff, #e0efff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .identity .title {
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: #dae9ff;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 0.6rem;
+    }
+
+    .badge-pill {
+      background: rgba(20, 40, 65, 0.6);
+      backdrop-filter: blur(8px);
+      padding: 0.4rem 1.8rem;
+      border-radius: 80px;
+      border: 1px solid rgba(255,255,255,0.5);
+      font-weight: 500;
+      font-size: 1rem;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .quick-info {
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(12px);
+      padding: 1.2rem 2.5rem;
+      border-radius: 100px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 10px 20px -5px #02182b;
+    }
+
+    .quick-info i {
+      color: #ffde7a;
+      margin-right: 0.6rem;
+      filter: drop-shadow(0 2px 4px black);
+    }
+
+    /* ----- SECTIONS ----- */
+    .section {
+      max-width: 1300px;
+      margin: 0 auto 4.5rem auto;
+      padding: 0 2rem;
+      scroll-margin-top: 90px;
+    }
+
+    .section-title {
+      font-size: 2.3rem;
+      font-weight: 600;
+      color: #163752;
+      margin-bottom: 2.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      border-bottom: 4px solid #b8ceec;
+      padding-bottom: 0.8rem;
+      text-shadow: 0 2px 4px #dae6f8;
+    }
+
+    .section-title i {
+      background: #274e79;
+      color: white;
+      padding: 0.8rem;
+      border-radius: 50%;
+      font-size: 1.7rem;
+      box-shadow: 0 8px 12px -4px #1b3858;
+    }
+
+    /* profil + contact */
+    .profil-contact {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      background: #e3eefb;
+      border-radius: 70px 25px 70px 25px;
+      padding: 2.5rem;
+      border: 1px solid #ffffff;
+      box-shadow: 0 20px 30px -10px #8faaca, 0 0 0 3px #f4f9ff inset;
+    }
+
+    .profil-text {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(4px);
+      padding: 2rem;
+      border-radius: 60px 15px 60px 15px;
+      font-size: 1.1rem;
+      color: #10273f;
+      border: 1px solid white;
+    }
+
+    .contact-mini {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(6px);
+      padding: 2rem;
+      border-radius: 60px 15px 60px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      border: 1px solid white;
+    }
+
+    .contact-line {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 1.1rem;
+      background: rgba(255,255,255,0.5);
+      padding: 0.9rem 1.5rem;
+      border-radius: 100px;
+      border: 1px solid #c7ddfc;
+    }
+
+    /* langues et loisirs */
+    .lang-hobby {
+      background: #dde9f7;
+      border-radius: 80px 20px 80px 20px;
+      padding: 2.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2.5rem;
+      border: 1px solid white;
+      box-shadow: 0 10px 25px -12px #6d8eb0;
+    }
+
+    .lang-badge {
+      background: #ffffffde;
+      padding: 0.6rem 2.2rem 0.6rem 1.8rem;
+      border-radius: 100px;
+      font-weight: 600;
+      border: 1px solid #a1c0e6;
+      display: inline-flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 6px 10px #c1d3e8;
+    }
+
+    .lang-level {
+      background: #375e86;
+      color: white;
+      border-radius: 60px;
+      padding: 0.3rem 1.2rem;
+      font-size: 0.8rem;
+    }
+
+    .hobby-item {
+      background: #f0f6ff;
+      padding: 0.6rem 2.2rem;
+      border-radius: 100px;
+      font-weight: 600;
+      border: 1px solid #7fa5cf;
+      box-shadow: 0 4px 8px #b2cae8;
+      transition: 0.2s;
+    }
+
+    .hobby-item:hover {
+      background: white;
+      transform: scale(1.05);
+    }
+
+    /* cartes expérience/formation */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem;
+    }
+
+    .card {
+      background: #ffffffda;
+      backdrop-filter: blur(4px);
+      border-radius: 38px 12px 38px 12px;
+      padding: 2rem;
+      box-shadow: 0 20px 30px -15px #6a88aa, 0 4px 0 0 #cedff5 inset;
+      border: 1px solid white;
+      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+    }
+
+    .card:hover {
+      transform: translateY(-12px) scale(1.01);
+      box-shadow: 0 30px 40px -12px #1f3d60, 0 0 0 3px white;
+    }
+
+    .card-year {
+      background: #274a71;
+      color: white;
+      display: inline-block;
+      padding: 0.2rem 1.4rem;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 0 #0b1f32;
+    }
+
+    .card h3 {
+      font-size: 1.3rem;
+      color: #103352;
+    }
+
+    .card-sub {
+      color: #2d5580;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-desc {
+      margin-top: 0.8rem;
+      color: #2f4d72;
+      border-left: 5px solid #567faf;
+      padding-left: 1rem;
+    }
+
+    /* compétences cloud */
+    .skills-panel {
+      background: #ddecfd;
+      border-radius: 80px 20px 80px 20px;
+      padding: 2.8rem;
+      border: 2px solid white;
+      box-shadow: 0 0 0 4px #f0f7ff inset;
+    }
+
+    .skill-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .skill-item {
+      background: white;
+      padding: 0.9rem 2rem;
+      border-radius: 100px;
+      font-weight: 600;
+      color: #1c4a77;
+      box-shadow: 0 10px 16px -12px #1b3e62, 0 0 0 1px #c2daff inset;
+      transition: 0.2s;
+      cursor: default;
+      font-size: 1rem;
+    }
+
+    .skill-item:hover {
+      background: #305d89;
+      color: white;
+      transform: scale(1.08) rotate(0.5deg);
+      box-shadow: 0 18px 22px -12px #00223d;
+    }
+
+    /* zone dynamique */
+    .dynamic-zone {
+      background: linear-gradient(145deg, #e3efff, #ccdff5);
+      border-radius: 90px 20px 90px 20px;
+      padding: 2.8rem;
+      border: 2px solid white;
+      box-shadow: 0 20px 30px -10px #3d6185;
+    }
+
+    .dynamic-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .dynamic-btn {
+      background: linear-gradient(125deg, #2b4e78, #173a5c);
+      border: none;
+      color: white;
+      padding: 1.3rem 3rem;
+      border-radius: 80px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      border: 1px solid #d1e6ff;
+      box-shadow: 0 16px 24px -10px #001b33;
+      transition: all 0.25s;
+    }
+
+    .dynamic-btn:hover {
+      background: linear-gradient(125deg, #386aa0, #1e4875);
+      transform: scale(1.05) translateY(-4px);
+      box-shadow: 0 24px 32px -10px #021c33;
+    }
+
+    .dynamic-message {
+      background: white;
+      padding: 1.2rem 2.5rem;
+      border-radius: 120px;
+      flex: 1;
+      font-weight: 600;
+      color: #003366;
+      font-size: 1.1rem;
+      text-align: center;
+      box-shadow: inset 0 4px 12px #cddef7, 0 8px 16px -12px #172e44;
+    }
+
+    /* FOOTER */
+    .site-footer {
+      background: #253c56;
+      color: #e0edfe;
+      padding: 2.5rem;
+      border-radius: 80px 80px 0 0;
+      margin-top: 5rem;
+      box-shadow: 0 -10px 30px #10273f;
+    }
+
+    .footer-content {
+      max-width: 1300px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .social a {
+      color: #bed9ff;
+      font-size: 2rem;
+      margin: 0 0.5rem;
+      transition: 0.2s;
+      display: inline-block;
+      text-decoration: none;
+    }
+
+    .social a:hover {
+      color: white;
+      transform: scale(1.2) translateY(-5px);
+      filter: drop-shadow(0 6px 8px #02172a);
+    }
+
+    /* Bouton de téléchargement PDF supplémentaire dans la zone interactive */
+    .pdf-btn {
+      background: linear-gradient(125deg, #3d5a7a, #1f3f5c);
+      border: 2px solid #ffd966;
+    }
+    
+    .pdf-btn i {
+      color: #ffd966;
+    }
+
+    @media (max-width: 700px) {
+      .header-container { flex-direction: column; align-items: start; }
+      .quick-info { flex-direction: column; width: 100%; }
+      .profil-contact { grid-template-columns: 1fr; }
+      .dynamic-wrapper { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MENU FLOTTANT AVEC OPTION TÉLÉCHARGEMENT PDF -->
+  <div class="menu-flottant">
+    <div class="menu-icon" id="menuToggle">
+      <i class="fas fa-bars" id="menuIcon"></i>
+    </div>
+    <nav class="nav-panel" id="navPanel">
+      <ul>
+        <li><a href="#accueil"><i class="fas fa-home"></i> Accueil</a></li>
+        <li><a href="#profil"><i class="fas fa-user-astronaut"></i> Profil</a></li>
+        <li><a href="#langues"><i class="fas fa-language"></i> Langues & Loisirs</a></li>
+        <li><a href="#experiences"><i class="fas fa-briefcase"></i> Projets & Stages</a></li>
+        <li><a href="#formations"><i class="fas fa-graduation-cap"></i> Formations</a></li>
+        <li><a href="#competences"><i class="fas fa-microchip"></i> Compétences</a></li>
+        <li><a href="#interactif"><i class="fas fa-comment-dots"></i> Zone interactive</a></li>
+      </ul>
+      <!-- Option Télécharger PDF dans le menu -->
+      <div class="pdf-download-btn">
+        <a href="#" id="downloadPdfMenu" style="display: flex; align-items: center; gap: 1.2rem; padding: 1rem 1.8rem; border-radius: 80px; text-decoration: none;">
+          <i class="fas fa-file-pdf"></i> Télécharger CV (PDF)
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <!-- ACCUEIL (ancre) -->
+  <span id="accueil"></span>
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="header-container">
+      <div class="identity">
+        <h1>Alexandre Martin</h1>
+        <div class="title">
+          <i class="fas fa-laptop-code" style="color: #ffd966;"></i> Étudiant en Licence 3 Informatique
+          <span class="badge-pill"><i class="fas fa-university"></i> Université de Lyon</span>
+        </div>
+      </div>
+      <div class="quick-info">
+        <span><i class="fas fa-map-marker-alt"></i> Lyon, France</span>
+        <span><i class="fas fa-phone-alt"></i> 06 12 34 56 78</span>
+        <span><i class="fas fa-envelope"></i> alexandre.martin@etu.univ-lyon.fr</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECTION PROFIL -->
+  <section id="profil" class="section">
+    <div class="section-title"><i class="fas fa-user-circle"></i> Profil & Contact</div>
+    <div class="profil-contact">
+      <div class="profil-text">
+        <i class="fas fa-quote-left" style="color:#3c6190; opacity:0.4; font-size:2rem;"></i>
+        Étudiant en Licence 3 Informatique, passionné par le développement web et l'intelligence artificielle. Rigoureux, curieux et autonome, je cherche à mettre mes compétences au service de projets innovants. Actuellement à la recherche d'un stage de fin d'année.
+      </div>
+      <div class="contact-mini">
+        <div class="contact-line"><i class="fas fa-phone-alt"></i> 06 12 34 56 78</div>
+        <div class="contact-line"><i class="fas fa-envelope"></i> alexandre.martin@etu.univ-lyon.fr</div>
+        <div class="contact-line"><i class="fas fa-map-pin"></i> Lyon, France</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION LANGUES & LOISIRS -->
+  <section id="langues" class="section">
+    <div class="section-title"><i class="fas fa-heart"></i> Langues & Loisirs</div>
+    <div class="lang-hobby">
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+        <span class="lang-badge">Français <span class="lang-level">Langue maternelle</span></span>
+        <span class="lang-badge">Anglais <span class="lang-level">Courant (TOEIC 950)</span></span>
+        <span class="lang-badge">Espagnol <span class="lang-level">Intermédiaire</span></span>
+      </div>
+      <div style="display: flex; gap: 1rem;">
+        <span class="hobby-item"><i class="fas fa-chess"></i> Échecs</span>
+        <span class="hobby-item"><i class="fas fa-hiking"></i> Randonnée</span>
+        <span class="hobby-item"><i class="fas fa-music"></i> Guitare</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION PROJETS & STAGES -->
+  <section id="experiences" class="section">
+    <div class="section-title"><i class="fas fa-briefcase"></i> Projets & Stages</div>
+    <div class="cards-grid">
+      <div class="card">
+        <span class="card-year">2025</span>
+        <h3>Stage développeur web</h3>
+        <div class="card-sub">Startup Innov'Lyon · 3 mois</div>
+        <div class="card-desc">Développement d'une application React/Node.js pour la gestion de projets. Mise en place d'API REST et base de données MongoDB.</div>
+      </div>
+      <div class="card">
+        <span class="card-year">2024</span>
+        <h3>Projet tutoré</h3>
+        <div class="card-sub">Application de covoiturage étudiant</div>
+        <div class="card-desc">Conception d'une application mobile avec Flutter et Firebase. Gestion d'équipe selon la méthode agile.</div>
+      </div>
+      <div class="card">
+        <span class="card-year">2024</span>
+        <h3>Hackathon</h3>
+        <div class="card-sub">Challenge IA · 48h</div>
+        <div class="card-desc">Développement d'un chatbot pour l'orientation étudiante avec Python et TensorFlow. Prix de l'innovation.</div>
+      </div>
+      <div class="card">
+        <span class="card-year">2023</span>
+        <h3>Site web associatif</h3>
+        <div class="card-sub">Association étudiante</div>
+        <div class="card-desc">Création d'un site vitrine avec WordPress et développement de fonctionnalités personnalisées en PHP.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION FORMATIONS -->
+  <section id="formations" class="section">
+    <div class="section-title"><i class="fas fa-graduation-cap"></i> Formations</div>
+    <div class="cards-grid">
+      <div class="card">
+        <span class="card-year">2023-2026</span>
+        <h3>Licence 3 Informatique</h3>
+        <div class="card-sub">Université Claude Bernard Lyon 1</div>
+        <div class="card-desc">Parcours : Développement web, Intelligence artificielle, Bases de données, Algorithmique avancée.</div>
+      </div>
+      <div class="card">
+        <span class="card-year">2021-2023</span>
+        <h3>DUT Informatique</h3>
+        <div class="card-sub">IUT Lyon 1</div>
+        <div class="card-desc">Mention Bien. Programmation orientée objet, systèmes et réseaux, génie logiciel.</div>
+      </div>
+      <div class="card">
+        <span class="card-year">2021</span>
+        <h3>Baccalauréat Général</h3>
+        <div class="card-sub">Spécialités Mathématiques et NSI</div>
+        <div class="card-desc">Lycée du Parc, Lyon · Mention Très Bien</div>
+      </div>
+      <div class="card">
+        <span class="card-year">2024</span>
+        <h3>Certification</h3>
+        <div class="card-sub">MOOC Développement Mobile</div>
+        <div class="card-desc">Certificat OpenClassrooms - Développement d'applications Android (Kotlin).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION COMPÉTENCES -->
+  <section id="competences" class="section">
+    <div class="section-title"><i class="fas fa-cogs"></i> Compétences techniques</div>
+    <div class="skills-panel">
+      <div class="skill-cloud" id="skillCloud"></div>
+    </div>
+  </section>
+
+  <!-- SECTION INTERACTIVE AVEC BOUTON PDF -->
+  <section id="interactif" class="section">
+    <div class="section-title"><i class="fas fa-comment-dots"></i> Zone interactive</div>
+    <div class="dynamic-zone">
+      <div class="dynamic-wrapper">
+        <button class="dynamic-btn" id="revealBtn"><i class="fas fa-sync-alt fa-spin"></i> Découvrir mon parcours</button>
+        <div class="dynamic-message" id="displayMsg">Cliquez pour explorer mes compétences</div>
+      </div>
+      <!-- Deuxième bouton de téléchargement PDF -->
+      <div style="margin-top: 2rem; text-align: center;">
+        <button class="dynamic-btn pdf-btn" id="downloadPdfBtn">
+          <i class="fas fa-file-pdf"></i> Télécharger mon portfolio (PDF)
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <span>© 2026 Alexandre Martin · Étudiant en Informatique</span>
+      <span><i class="fas fa-bolt"></i> Disponible pour un stage</span>
+      <div class="social">
+        <a href="https://www.linkedin.com/in/alexandre-martin" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+          <i class="fab fa-linkedin"></i>
+        </a>
+        <a href="https://github.com/alexandre-martin" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          <i class="fab fa-github"></i>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      // === MENU HAMBURGER ===
+      const toggleBtn = document.getElementById('menuToggle');
+      const panel = document.getElementById('navPanel');
+      const icon = document.getElementById('menuIcon');
+
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open')) {
+          icon.classList.remove('fa-bars');
+          icon.classList.add('fa-times');
+          toggleBtn.style.transform = 'scale(1.1)';
+          setTimeout(() => toggleBtn.style.transform = 'scale(1)', 200);
+        } else {
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        }
+      });
+
+      document.querySelectorAll('.nav-panel a').forEach(link => {
+        link.addEventListener('click', () => {
+          panel.classList.remove('open');
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!panel.contains(e.target) && !toggleBtn.contains(e.target)) {
+          panel.classList.remove('open');
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        }
+      });
+
+      // === NUAGE DE COMPÉTENCES ===
+      const skills = [
+        "💻 Java", "🐍 Python", "⚛️ React", "🟢 Node.js", "🗄️ MongoDB",
+        "📱 Flutter", "🐘 PHP", "🗃️ SQL", "🐳 Docker", "☁️ AWS",
+        "📊 TensorFlow", "🔧 Git", "📈 Agile/Scrum", "🎨 Figma", "📋 UML"
+      ];
+      const cloud = document.getElementById('skillCloud');
+      if (cloud) {
+        skills.forEach(s => {
+          let span = document.createElement('span');
+          span.className = 'skill-item';
+          span.textContent = s;
+          cloud.appendChild(span);
+        });
+      }
+
+      // === ZONE DYNAMIQUE ===
+      const messages = [
+        "🎓 Licence 3 Informatique - Université Lyon 1",
+        "💼 Stage développeur web chez Innov'Lyon (2025)",
+        "🏆 Prix de l'innovation au Hackathon IA 2024",
+        "📱 Projet mobile Flutter + Firebase",
+        "🌐 React, Node.js, MongoDB - stack MERN",
+        "🐍 Python pour l'IA et le machine learning",
+        "🗣️ Anglais courant (TOEIC 950)",
+        "🎸 Passionné de guitare et d'échecs"
+      ];
+
+      const msgDiv = document.getElementById('displayMsg');
+      const btn = document.getElementById('revealBtn');
+      let idx = 0;
+
+      if (btn && msgDiv) {
+        btn.addEventListener('click', () => {
+          msgDiv.textContent = messages[idx % messages.length];
+          msgDiv.style.background = '#f2fdff';
+          msgDiv.style.transform = 'scale(1.02)';
+          setTimeout(() => {
+            msgDiv.style.background = 'white';
+            msgDiv.style.transform = 'scale(1)';
+          }, 200);
+          idx++;
+        });
+
+        setTimeout(() => {
+          msgDiv.textContent = "🔍 5 projets · prêt à relever de nouveaux défis";
+        }, 1500);
+      }
+
+      // === FONCTION DE TÉLÉCHARGEMENT PDF ===
+      function downloadPortfolioAsPDF() {
+        // Élément à capturer (tout le body)
+        const element = document.body;
+        
+        // Options pour html2pdf
+        const opt = {
+          margin:        [0.5, 0.5, 0.5, 0.5], // haut, droit, bas, gauche (en in)
+          filename:      'Alexandre_Martin_Portfolio.pdf',
+          image:         { type: 'jpeg', quality: 0.98 },
+          html2canvas:   { scale: 2, letterRendering: true, useCORS: true, logging: false },
+          jsPDF:         { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        
+        // Afficher un message de chargement (optionnel)
+        const originalText = msgDiv.textContent;
+        msgDiv.textContent = "⏳ Génération du PDF en cours...";
+        msgDiv.style.background = '#ffd966';
+        
+        // Exécuter html2pdf
+        html2pdf().set(opt).from(element).save().then(() => {
+          // Restaurer le message après génération
+          msgDiv.textContent = originalText;
+          msgDiv.style.background = 'white';
+        }).catch(error => {
+          console.error('Erreur PDF:', error);
+          msgDiv.textContent = "❌ Erreur lors de la génération du PDF";
+          msgDiv.style.background = 'white';
+        });
+      }
+
+      // === BOUTONS DE TÉLÉCHARGEMENT PDF ===
+      const downloadBtnMenu = document.getElementById('downloadPdfMenu');
+      const downloadBtnMain = document.getElementById('downloadPdfBtn');
+      
+      if (downloadBtnMenu) {
+        downloadBtnMenu.addEventListener('click', (e) => {
+          e.preventDefault();
+          downloadPortfolioAsPDF();
+        });
+      }
+      
+      if (downloadBtnMain) {
+        downloadBtnMain.addEventListener('click', (e) => {
+          e.preventDefault();
+          downloadPortfolioAsPDF();
+        });
+      }
+
+      // Animation des cartes
+      const cards = document.querySelectorAll('.card');
+      const obs = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.style.opacity = 1;
+            e.target.style.transform = 'translateY(0)';
+          }
+        });
+      }, { threshold: 0.2 });
+
+      cards.forEach(c => {
+        c.style.opacity = 0;
+        c.style.transform = 'translateY(25px)';
+        c.style.transition = 'opacity 0.6s, transform 0.5s';
+        obs.observe(c);
+      });
+    })();
+  </script>
+</body>
+</html>

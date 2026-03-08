@@ -8,8 +8,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <!-- Google Fonts Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..700&display=swap" rel="stylesheet">
-  <!-- html2pdf (pour la génération PDF) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <!-- jsPDF + html2canvas -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -25,7 +26,7 @@
       line-height: 1.5;
     }
 
-    /* ----- MENU FLOTTANT AMÉLIORÉ ----- */
+    /* ----- MENU FLOTTANT ----- */
     .menu-flottant {
       position: fixed;
       top: 25px;
@@ -129,6 +130,13 @@
       border: 2px solid #ffd966;
       justify-content: center;
       font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      padding: 1rem 1.8rem;
+      border-radius: 80px;
+      text-decoration: none;
+      color: white;
     }
     
     .pdf-download-btn a i {
@@ -514,14 +522,62 @@
       filter: drop-shadow(0 6px 8px #02172a);
     }
 
-    /* Bouton de téléchargement PDF supplémentaire dans la zone interactive */
+    /* Bouton PDF dans la zone interactive */
     .pdf-btn {
       background: linear-gradient(125deg, #3d5a7a, #1f3f5c);
       border: 2px solid #ffd966;
+      margin-top: 1rem;
+      width: 100%;
+      justify-content: center;
     }
     
     .pdf-btn i {
       color: #ffd966;
+    }
+
+    /* Loader pour le PDF - version améliorée */
+    .pdf-loader {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      color: white;
+      backdrop-filter: blur(5px);
+    }
+    
+    .pdf-loader.active {
+      display: flex;
+    }
+    
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid #ffd966;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1.5rem;
+    }
+    
+    .quality-badge {
+      background: #ffd966;
+      color: #1d2f40;
+      padding: 0.3rem 1rem;
+      border-radius: 50px;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     @media (max-width: 700px) {
@@ -533,6 +589,15 @@
   </style>
 </head>
 <body>
+
+  <!-- Loader PDF amélioré -->
+  <div class="pdf-loader" id="pdfLoader">
+    <div class="spinner"></div>
+    <div style="font-size: 1.2rem; background: #1d2f40; padding: 1rem 2rem; border-radius: 50px; text-align: center;">
+      <i class="fas fa-file-pdf"></i> Génération du PDF haute qualité...<br>
+      <span class="quality-badge"><i class="fas fa-star"></i> 300 DPI · HD <i class="fas fa-star"></i></span>
+    </div>
+  </div>
 
   <!-- MENU FLOTTANT AVEC OPTION TÉLÉCHARGEMENT PDF -->
   <div class="menu-flottant">
@@ -551,8 +616,8 @@
       </ul>
       <!-- Option Télécharger PDF dans le menu -->
       <div class="pdf-download-btn">
-        <a href="#" id="downloadPdfMenu" style="display: flex; align-items: center; gap: 1.2rem; padding: 1rem 1.8rem; border-radius: 80px; text-decoration: none;">
-          <i class="fas fa-file-pdf"></i> Télécharger CV (PDF)
+        <a href="#" id="downloadPdfMenu">
+          <i class="fas fa-file-pdf"></i> Télécharger CV (PDF HD)
         </a>
       </div>
     </nav>
@@ -693,7 +758,7 @@
       <!-- Deuxième bouton de téléchargement PDF -->
       <div style="margin-top: 2rem; text-align: center;">
         <button class="dynamic-btn pdf-btn" id="downloadPdfBtn">
-          <i class="fas fa-file-pdf"></i> Télécharger mon portfolio (PDF)
+          <i class="fas fa-file-pdf"></i> Télécharger mon portfolio (PDF HD)
         </button>
       </div>
     </div>
@@ -801,35 +866,145 @@
         }, 1500);
       }
 
-      // === FONCTION DE TÉLÉCHARGEMENT PDF ===
-      function downloadPortfolioAsPDF() {
-        // Élément à capturer (tout le body)
-        const element = document.body;
-        
-        // Options pour html2pdf
-        const opt = {
-          margin:        [0.5, 0.5, 0.5, 0.5], // haut, droit, bas, gauche (en in)
-          filename:      'Alexandre_Martin_Portfolio.pdf',
-          image:         { type: 'jpeg', quality: 0.98 },
-          html2canvas:   { scale: 2, letterRendering: true, useCORS: true, logging: false },
-          jsPDF:         { unit: 'in', format: 'a4', orientation: 'portrait' }
-        };
-        
-        // Afficher un message de chargement (optionnel)
-        const originalText = msgDiv.textContent;
-        msgDiv.textContent = "⏳ Génération du PDF en cours...";
-        msgDiv.style.background = '#ffd966';
-        
-        // Exécuter html2pdf
-        html2pdf().set(opt).from(element).save().then(() => {
-          // Restaurer le message après génération
-          msgDiv.textContent = originalText;
-          msgDiv.style.background = 'white';
-        }).catch(error => {
-          console.error('Erreur PDF:', error);
-          msgDiv.textContent = "❌ Erreur lors de la génération du PDF";
-          msgDiv.style.background = 'white';
-        });
+      // === FONCTION DE TÉLÉCHARGEMENT PDF HAUTE QUALITÉ ===
+      const loader = document.getElementById('pdfLoader');
+      
+      async function downloadPortfolioAsPDF() {
+        try {
+          // Afficher le loader
+          loader.classList.add('active');
+          
+          // Créer une nouvelle instance jsPDF
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'px',
+            format: 'a4'
+          });
+          
+          // Récupérer tous les éléments à capturer
+          const header = document.querySelector('.site-header');
+          const sections = document.querySelectorAll('.section');
+          const footer = document.querySelector('.site-footer');
+          
+          const elements = [header, ...sections, footer];
+          
+          // Options haute qualité pour html2canvas
+          const canvasOptions = {
+            scale: 3, // Échelle 3x pour une qualité HD (300 DPI équivalent)
+            logging: false,
+            allowTaint: true,
+            useCORS: true,
+            backgroundColor: '#eef3f8',
+            windowWidth: document.documentElement.scrollWidth,
+            windowHeight: document.documentElement.scrollHeight,
+            imageTimeout: 0,
+            onclone: (clonedDoc) => {
+              // Améliorer la qualité dans le clone
+              const clonedElements = clonedDoc.querySelectorAll('.card, .skill-item, .lang-badge');
+              clonedElements.forEach(el => {
+                el.style.boxShadow = 'none'; // Réduire les ombres pour meilleure lisibilité
+              });
+            }
+          };
+          
+          for (let i = 0; i < elements.length; i++) {
+            const el = elements[i];
+            
+            if (!el) continue;
+            
+            // Ajouter une nouvelle page sauf pour le premier élément
+            if (i > 0) {
+              pdf.addPage();
+            }
+            
+            // Capturer l'élément en haute qualité
+            const canvas = await html2canvas(el, canvasOptions);
+            
+            // Convertir en image JPEG avec qualité maximale
+            const imgData = canvas.toDataURL('image/jpeg', 1.0); // Qualité 100%
+            
+            // Dimensions du PDF en pixels
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            // Dimensions de l'image
+            const imgWidth = canvas.width;
+            const imgHeight = canvas.height;
+            
+            // Calculer le ratio pour adapter l'image à la page en conservant les proportions
+            const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+            const width = imgWidth * ratio;
+            const height = imgHeight * ratio;
+            
+            // Centrer l'image
+            const x = (pdfWidth - width) / 2;
+            const y = (pdfHeight - height) / 2;
+            
+            // Ajouter l'image au PDF
+            pdf.addImage(imgData, 'JPEG', x, y, width, height, undefined, 'FAST'); // 'FAST' pour meilleure compression
+          }
+          
+          // Sauvegarder le PDF avec un nom approprié
+          pdf.save('Alexandre_Martin_Portfolio_HD.pdf');
+          
+        } catch (error) {
+          console.error('Erreur lors de la génération du PDF:', error);
+          alert('Erreur lors de la génération du PDF. Veuillez réessayer.');
+        } finally {
+          // Cacher le loader
+          loader.classList.remove('active');
+        }
+      }
+
+      // Version alternative avec capture unique (si la multipage pose problème)
+      async function downloadPortfolioAsPDFSinglePage() {
+        try {
+          loader.classList.add('active');
+          
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'px',
+            format: 'a4'
+          });
+          
+          const element = document.body;
+          
+          const canvas = await html2canvas(element, {
+            scale: 2.5, // Haute qualité
+            logging: false,
+            backgroundColor: '#eef3f8',
+            windowWidth: element.scrollWidth,
+            windowHeight: element.scrollHeight,
+            allowTaint: true,
+            useCORS: true,
+            imageTimeout: 0
+          });
+          
+          const imgData = canvas.toDataURL('image/jpeg', 0.95);
+          
+          const pdfWidth = pdf.internal.pageSize.getWidth();
+          const pdfHeight = pdf.internal.pageSize.getHeight();
+          
+          const imgWidth = canvas.width;
+          const imgHeight = canvas.height;
+          
+          const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+          const width = imgWidth * ratio;
+          const height = imgHeight * ratio;
+          const x = (pdfWidth - width) / 2;
+          const y = (pdfHeight - height) / 2;
+          
+          pdf.addImage(imgData, 'JPEG', x, y, width, height);
+          pdf.save('Alexandre_Martin_Portfolio_HD.pdf');
+          
+        } catch (error) {
+          console.error('Erreur:', error);
+          alert('Erreur lors de la génération du PDF');
+        } finally {
+          loader.classList.remove('active');
+        }
       }
 
       // === BOUTONS DE TÉLÉCHARGEMENT PDF ===
@@ -839,14 +1014,14 @@
       if (downloadBtnMenu) {
         downloadBtnMenu.addEventListener('click', (e) => {
           e.preventDefault();
-          downloadPortfolioAsPDF();
+          downloadPortfolioAsPDF(); // Version multipage HD
         });
       }
       
       if (downloadBtnMain) {
         downloadBtnMain.addEventListener('click', (e) => {
           e.preventDefault();
-          downloadPortfolioAsPDF();
+          downloadPortfolioAsPDF(); // Version multipage HD
         });
       }
 
